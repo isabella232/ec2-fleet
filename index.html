@@ -1,7 +1,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    var socket = io.connect('http://localhost');
+    var socket = io.connect('http://localhost')
+            , curStatus = false;
     socket.on('instance',function(data){
         console.log(data);
         $('.logs .body').html('<td>' + data.hostname + '</td>');
@@ -10,12 +11,14 @@
         });
     });
     socket.on('status', function(data) {
-        console.log(data);
+        if(data.res.running !== curStatus) {
+            socket.emit('logs',{});
+        }
+        curStatus = data.res.running;
         $('.status .body').html('<td>' + data.hostname + '</td>');
         if(data.res.running === true) running = 'running';
         else running = 'not running';
         $('.status .body').append('<td>' + running +'</td>');
-
     })
 </script>
 <table class="logs" border="1">

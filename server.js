@@ -15,15 +15,23 @@ app.get('/', function (req, res) {
     res.sendfile(__dirname + '/index.html');
 });
 
-io.sockets.on('connection', function (socket) {
-    var socket = socket;
-    siegeLogs(socket);
-    setInterval(function() {
-        status(socket);
-    },5000);
+io.configure('development',function(){
+    io.set('log level',2);
 });
 
 
+io.sockets.on('connection', function (socket) {
+    var socket = socket;
+
+    socket.on('logs',function(){
+        siegeLogs(socket);
+    });
+
+    siegeLogs(socket);
+    setInterval(function() {
+        status(socket);
+    },500);
+});
 
 function siegeLogs(socket) {
     var regions = fleet.loadRegions();
@@ -63,7 +71,6 @@ function status(socket) {
     var regions = fleet.loadRegions();
 
     regions.on('instance', function(inst){
-        console.log('emit status');
         emitStatus(inst, socket);
     });
 
