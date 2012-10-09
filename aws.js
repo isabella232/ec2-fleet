@@ -5,8 +5,12 @@ var fs = require('fs'),
     aws2js = require('aws2js'),
     program = require('commander'),
     async = require('async'),
-    config = require('./aws-config.json'),
-    command_given = false;
+    config = require('./aws-config.json')
+  , _ = require('underscore')
+  , csv = require('csv')
+  , request = require('superagent')
+  , fleet = require('./lib/fleet')
+  , command_given = false;
 
 program
     .version('0.1.0');
@@ -70,6 +74,57 @@ program
         });
     });
 
+program
+    .command('siege [time] [concurrent]')
+    .description('Run siege on the client machines')
+    .action(function(time, concurrent){
+        command_given = true;
+        var regions = config.regions;
+        regions.map(getClient).forEach(function(client) {
+            getInstances(client, function(err, instances) {
+                 runSiege(instances, {
+                     time: time,
+                     concurrent: concurrent
+                 });
+            });
+        })
+    });
+
+program
+  .command('logs')
+  .description('Get siege logs')
+  .action(function(){
+      command_given = true;
+      var regions = config.regions;
+      console.log('Host\t','Time\t','Trans\t','Elap Time\t','Data Trans\t','Resp Time\t','Trans Rate\t','Throughput\t','Concur\t','Successful\t','Failed\t');
+
+      var regions = fleet.loadRegions();
+
+      regions.on('error',function(err){
+          console.log(err);
+      })
+
+      regions.on('instance',function(instance) {
+          siegeLogs(instance);
+      });
+
+      regions.eachInstance();
+  });
+
+program
+  .command('urls <file>')
+  .description('Pass a new set of urls to all instances')
+  .action(function(file){
+      command_given = true;
+      var regions = config.regions;
+      console.log(regions);
+      regions.map(getClient).forEach(function(client){
+          getInstances(client, function(err, instances){
+              setUrls(file,instances);
+          })
+      })
+  })
+
 // ====== Working with instances ===============================================
 function normalizeResponse(obj, key) { // Handles quirks of xml-to-js transformation ('item', empty objects)
     if (typeof obj == 'object') {
@@ -89,14 +144,19 @@ function normalizeResponse(obj, key) { // Handles quirks of xml-to-js transforma
     return obj;
 }
 
+/**
+ * AMI's have to be different for each region.
+ * AMI's can not be copied across regions
+ * @type {Object}
+ */
 var regionInstances = { // We are interested in Ubuntu Server 12.04 LTS (64 bit, EBS)
-    "ap-northeast-1": "ami-c641f2c7",
-    "ap-southeast-1": "ami-acf6b0fe",
-    "eu-west-1": "ami-ab9491df",
-    "sa-east-1": "ami-5c03dd41",
-    "us-east-1": "ami-82fa58eb",
-    "us-west-1": "ami-5965401c",
-    "us-west-2": "ami-4438b474",
+//    "ap-northeast-1": "ami-c641f2c7",
+//    "ap-southeast-1": "ami-acf6b0fe",
+//    "eu-west-1": "ami-ab9491df",
+//    "sa-east-1": "ami-5c03dd41",
+    "us-east-1": "ami-97ae12fe",
+    "us-west-1": "ami-f1edcab4"
+//    ,"us-west-2": "ami-4438b474"
 };
 
 var clients = {}; // {<region>: <ec2 client>}
@@ -131,7 +191,7 @@ function startInstance(client) {
         ImageId: regionInstances[client.region],
         MinCount: 1,
         MaxCount: 1,
-        UserData: new Buffer(userdata).toString("base64"),
+        UserData: new Buffer(userdata).toString("base64")
     };
     if (config.keyName) {
         // To gain ssh access to instances, you should either upload a key to 
@@ -146,13 +206,13 @@ function startInstance(client) {
         resp = normalizeResponse(resp);
         var instanceId = resp.instancesSet[0].instanceId;
         params = {
-            "ResourceId.1": instanceId,
+            "ResourceId.1": instanceId
         };
         var keys = Object.keys(config.instanceTags);
         for (var i = 0; i < keys.length; i++) {
             params["Tag."+(i+1)+".Key"] = keys[i];
             params["Tag."+(i+1)+".Value"] = config.instanceTags[keys[i]];
-        };
+        }
 
         if (keys.length > 0) {
             client.request("CreateTags", params, function(err, resp) {
@@ -293,6 +353,72 @@ function sendParam(client, inst, param, val) {
         console.error("Instance "+inst.instanceId+" error:"+err);
     });
     req.end();
+}
+
+/**
+ * Takes time and concurrent users as options
+ * Defaults to 30seconds and 10 concurrent users
+ * @param instances
+ * @param options
+ */
+function runSiege(instances, options) {
+    var time = (options.time) ? options.time : 30
+      , concurrent = (options.concurrent) ? options.concurrent : 10;
+    console.log('Running siege for',time,'seconds','with',concurrent,'concurrent users');
+    var command = encodeURIComponent(new Buffer('-t'+time+'s -c '+concurrent+' -b -f/home/ubuntu/urls.txt').toString('base64'));
+    _.each(instances, function(inst) {
+        var path = '/siege?c=' + command;
+        var req = http.request({
+            host: inst.dnsName,
+            port: config.controlPort,
+            path: path
+        });
+        req.on('response',function(){
+
+        });
+        req.on('error', function(err) {
+            console.error("Instance "+inst.instanceId+" error:"+err);
+        });
+        req.end();
+    });
+}
+
+function siegeLogs(inst) {
+    if(!inst.dnsName) {
+        console.log('invalid instance name');
+        return;
+    }
+    request
+      .get('http://' + inst.dnsName + ':' + config.controlPort + '/log')
+      .end(function(res){
+          var lines = [];
+          csv()
+            .from(res.text)
+            .on('record',function(data){
+                if(_.isArray(data)) {
+                    lines.push(data);
+                }
+            })
+            .on('end',function(){
+                console.log(inst.dnsName +'\t', lines[lines.length-1].join('\t'));
+            });
+      });
+}
+
+function setUrls(file, instances) {
+    fs.readFile(file,function(err, data) {
+        if(err) return;
+        var base = data.toString('base64');
+        _.each(instances, function(inst) {
+            console.log('sending request','http://' + inst.dnsName + ':' + config.controlPort + '/urls', base);
+            request
+              .get('http://' + inst.dnsName + ':' + config.controlPort + '/urls')
+              .query({urls: base})
+              .end(function(res){
+
+              });
+        })
+    });
 }
 
 

@@ -1,0 +1,48 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    var socket = io.connect('http://localhost');
+    socket.on('instance',function(data){
+        console.log(data);
+        $('.logs .body').html('<td>' + data.hostname + '</td>');
+        $.each(data.lines, function(k,v){
+            $('.logs .body').append('<td>' + v + '</td>');
+        });
+    });
+    socket.on('status', function(data) {
+        console.log(data);
+        $('.status .body').html('<td>' + data.hostname + '</td>');
+        if(data.res.running === true) running = 'running';
+        else running = 'not running';
+        $('.status .body').append('<td>' + running +'</td>');
+
+    })
+</script>
+<table class="logs" border="1">
+    <tr>
+        <th>Hostname</th>
+        <th>Time</th>
+        <th>Trans</th>
+        <th>Elap Time</th>
+        <th>Data Trans</th>
+        <th>Resp Time</th>
+        <th>Trans Rate</th>
+        <th>Throughput</th>
+        <th>Concurrent</th>
+        <th>Successful</th>
+        <th>Failed</th>
+    </tr>
+    <tr class="body">
+        <td id="hostname"></td>
+    </tr>
+</table>
+
+<table class="status" border="1">
+    <tr>
+        <th>Hostname</th>
+        <th>Status</th>
+    </tr>
+    <tr class="body">
+
+    </tr>
+</table>

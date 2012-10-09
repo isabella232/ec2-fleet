@@ -6,6 +6,11 @@
     "dependencies": {
         "aws2js": "",
         "commander": "",
-        "async": ""
+        "async": "",
+        "underscore":"",
+        "superagent":"*",
+        "csv":"*",
+        "express":"*",
+        "socket.io":"*"
     }
 }

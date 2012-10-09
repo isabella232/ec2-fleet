@@ -24,24 +24,22 @@ npm install
 # Also, choose regions where you wish your instances to be launched.
 # Full list: ["ap-northeast-1", "ap-southeast-1", "eu-west-1", "sa-east-1", "us-east-1", "us-west-1", "us-west-2"]
 # Important! In all these regions you should edit Security Group 'default' to open control port 8889 for TCP 0.0.0.0/0 
-nano aws-config.json
+vim aws-config.json
 
 # Start 10 instances evenly distributed across the regions.
 # All instances are tagged according to 'instanceTags' field in aws-config.json.
 ./aws.js start 10
 
 # Watch status of our instances (similar to 'top' command).
-# Launch a separate terminal for this.
+# Launch a separate terminal for this. (Would love to set this up with sockets)
 ./aws.js status
 
-# Set the target IP of server to test.
-./aws.js set host <ip>
+# Start siege on all regions for 30 seconds with 100 concurrent connections
+./aws.js siege 30 100
 
-# Set the amount of connections to keep with the target from EACH instance.
-./aws.js set n 1000
-
-# Maximum recommended value = 25000 for EC2 Micro instance.
-./aws.js set n 25000
+# Retrieve the last set of log results from all running servers
+# Output is currently in tab delimited format. Easy enough to copy and paste in to excel for analysis
+./aws.js logs
 
 # Restart node process in all instances (recommended to do between tests).
 ./aws.js set restart 1
