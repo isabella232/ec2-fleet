@@ -5,7 +5,7 @@ var fs = require('fs'),
     aws2js = require('aws2js'),
     program = require('commander'),
     async = require('async'),
-    config = require('./aws-config.json')
+    config = require('./config/aws-config.json')
   , _ = require('underscore')
   , csv = require('csv')
   , request = require('superagent')
@@ -400,7 +400,9 @@ function siegeLogs(inst) {
                 }
             })
             .on('end',function(){
-                console.log(inst.dnsName +'\t', lines[lines.length-1].join('\t'));
+                if(_.isArray(lines[lines.length-1])) {
+                    console.log(inst.dnsName +'\t', lines[lines.length-1].join('\t'));
+                }
             });
       });
 }
