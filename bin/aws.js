@@ -5,11 +5,11 @@ var fs = require('fs'),
     aws2js = require('aws2js'),
     program = require('commander'),
     async = require('async'),
-    config = require('./config/aws-config.json')
+    config = require('./../config/aws-config.json')
   , _ = require('underscore')
   , csv = require('csv')
   , request = require('superagent')
-  , fleet = require('./lib/fleet')
+  , fleet = require('./../lib/fleet')
   , command_given = false;
 
 program
