@@ -98,12 +98,14 @@ function status(socket) {
 }
 
 function emitStatus(inst, socket) {
-    request
-      .get('http://' + inst.dnsName + ':' + config.controlPort)
-      .end(function(res){
-          socket.emit('status',{
-              hostname: inst.dnsName,
-              res: res.body.siege
+    if(inst.dnsName) {
+        request
+          .get('http://' + inst.dnsName + ':' + config.controlPort)
+          .end(function(res){
+              socket.emit('status',{
+                  hostname: inst.dnsName,
+                  res: res.body.siege
+              });
           });
-      });
+    }
 }
