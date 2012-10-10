@@ -47,6 +47,12 @@ node server.js
 
 Go to http://localhost:3000
 
+# Edit the urls.txt file with the urls that you would like to test.  This is a siege concept. One url per line
+vim ./urls.txt
+
+# and push it out to all servers
+./aws.js urls ./urls.txt
+
 # Start siege on all regions for 30 seconds with 100 concurrent connections
 ./aws.js siege 30 100
 
