@@ -1,12 +1,17 @@
 # ec2-fleet
 
-A distributed load test framework using Amazon EC2 instances.
+Originally inspired by [Node.js 1 million connections test](https://github.com/ashtuchkin/node-millenium)
+and branched from https://github.com/ashtuchkin/ec2-fleet
 
-This project makes it simple to launch and control lots of Amazon EC2 instances. By default, 
-it will test the amount of persistent connections a server can manage, but can be easily rewritten to make any test.
+A distributed load test framework using Amazon EC2 instances and Siege.
+
+This project makes it simple to launch and control lots of Amazon EC2 instances.
+
+The idea is that you setup an AMI image that will be used for load testing in each region you want to distribute your tests.
+The AMI should have all the tools setup, in this case nodejs, git and siege.
 
 Originally it was written to make a [Node.js 1 million connections test](https://github.com/ashtuchkin/node-millenium)
-using 40 EC2 Micro instances.  
+using 40 EC2 Micro instances.
 
 ## Usage
 ```bash
@@ -60,9 +65,7 @@ Go to http://localhost:3000
 
 The framework uses a 'Cloud Init' feature of Ubuntu AWS images. When an instance is to be started, a vanilla 
 image of Ubuntu is used (by default Ubuntu 12.04 64bit EBS), which runs a script given in file cloud-config.sh. 
-The script installs Node.js, main file client.js and an Upstart job to launch it. After this, the client.js 
+The script installs Node.js, pulls down ec2-fleet-client and sets up an Upstart job to launch it. After this, the client.js
 starts listening on control port (8889 by default) and obeys given commands (see the source).
-
-At any time you can edit client.js and all new instances will use the new version of it.
 
 License: MIT
