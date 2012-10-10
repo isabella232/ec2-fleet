@@ -11,7 +11,7 @@ function Instance(data) {
 function Status(data) {
     var self = this;
     self.hostname = data.hostname;
-    self.res = ko.observable(data.res);
+    self.res = ko.observable(data.res.running);
     self.status = ko.computed(function() {
         if(self.res() === true) {
             return 'running';
@@ -54,7 +54,7 @@ socket.on('status', function(data) {
     }
     curStatus = data.res.running;
     if(data.hostname in statuses) {
-        statuses[data.hostname].res(data.res);
+        statuses[data.hostname].res(data.res.running);
     } else {
         statuses[data.hostname] = new Status(data);
         view.status.push(statuses[data.hostname]);
