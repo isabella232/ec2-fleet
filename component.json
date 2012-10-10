@@ -1,0 +1,9 @@
+{
+  "name": "ec2-fleet",
+  "version": "1.0.0",
+  "dependencies": {
+    "jqueryjs": "git://github.com/bowerjs/jquery.git#v1.8.2",
+    "bootstrap.css": "git://github.com/bowerjs/bootstrap.git#2.1.1",
+    "knockout.js": "git://github.com/bowerjs/knockout.git#2.1.0"
+  }
+}

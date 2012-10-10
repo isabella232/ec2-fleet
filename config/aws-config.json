@@ -1,6 +1,6 @@
 {
-    "accessKeyId": "<YOUR KEY>",
-    "accessKeySecret": "<YOUR ID>",
+    "accessKeyId": "AKIAJ4OJKZVS3RHKFYNQ",
+    "accessKeySecret": "uk4UGWLEV83Ob1axG0EODdbDIve3E8sPT8Q+iCW8",
     "regions": ["us-east-1","us-west-1"],
     "userDataFile": "cloud-config.sh",
     "instanceTags": {

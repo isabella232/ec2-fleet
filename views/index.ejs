@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/bootstrap/css/bootstrap.css' />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/jquery/jquery.js"></script>
+    <script src="/knockout/knockout.js"></script>
+    <script src="/js/main.js"></script>
+</head>
+<body>
+<h3>Logs</h3>
+<table class="table table-bordered table-condensed logs">
+    <tr>
+        <th>Hostname</th>
+        <th>Time</th>
+        <th>Trans</th>
+        <th>Elap Time</th>
+        <th>Data Trans</th>
+        <th>Resp Time</th>
+        <th>Trans Rate</th>
+        <th>Throughput</th>
+        <th>Concurrent</th>
+        <th>Successful</th>
+        <th>Failed</th>
+    </tr>
+    <!-- ko foreach: instances -->
+    <tr class="body">
+        <td id="hostname" data-bind="text: hostname"></td>
+        <!-- ko foreach: logs -->
+        <td data-bind="text: $data"></td>
+        <!-- /ko -->
+    </tr>
+    <!-- /ko -->
+</table>
+<h3>Status</h3>
+<table class="table table-bordered table-condensed status">
+    <tr>
+        <th>Hostname</th>
+        <th>Status</th>
+    </tr>
+    <!-- ko foreach: status -->
+    <tr class="body">
+        <td data-bind="text: hostname"></td>
+        <td data-bind="text: status"></td>
+    </tr>
+    <!-- /ko -->
+</table>
+</body>
+</html>
+

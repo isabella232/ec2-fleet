@@ -11,6 +11,7 @@
         "superagent":"*",
         "csv":"*",
         "express":"*",
-        "socket.io":"*"
+        "socket.io":"*",
+        "ejs":"*"
     }
 }

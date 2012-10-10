@@ -34,6 +34,14 @@ vim aws-config.json
 # Launch a separate terminal for this. (Would love to set this up with sockets)
 ./aws.js status
 
+# A socket based version of the status page is available at localhost:3000
+# To use this, install dependencies and start the server
+sudo npm install bower -g
+bower install
+node server.js
+
+Go to http://localhost:3000
+
 # Start siege on all regions for 30 seconds with 100 concurrent connections
 ./aws.js siege 30 100
 
@@ -58,9 +66,3 @@ starts listening on control port (8889 by default) and obeys given commands (see
 At any time you can edit client.js and all new instances will use the new version of it.
 
 License: MIT
-
-
-
-
-
-

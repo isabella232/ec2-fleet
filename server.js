@@ -1,5 +1,6 @@
 var express = require('express')
   , app = express()
+  , routes = require('./routes')
   , util = require('util')
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server)
@@ -7,18 +8,35 @@ var express = require('express')
   , csv = require('csv')
   , request = require('superagent')
   , _ = require('underscore')
-  , config = require('./aws-config.json');
+  , config = require('./config/aws-config.json');
 
-server.listen(3000);
-
-app.get('/', function (req, res) {
-    res.sendfile(__dirname + '/index.html');
+server.listen(3000, function(){
+    console.log("Express server listening on port %d in %s mode", server.address().port, app.settings.env);
 });
+
+app.configure(function(){
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'ejs');
+    app.use(express.bodyParser());
+    app.use(express.methodOverride());
+    app.use(app.router);
+    app.use(express.static(__dirname + '/components'));
+});
+
+app.configure('development', function(){
+    app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+});
+
+app.configure('production', function(){
+    app.use(express.errorHandler());
+});
+
+app.get('/', routes.index);
+
 
 io.configure('development',function(){
     io.set('log level',2);
 });
-
 
 io.sockets.on('connection', function (socket) {
     var socket = socket;
@@ -28,6 +46,7 @@ io.sockets.on('connection', function (socket) {
     });
 
     siegeLogs(socket);
+    status(socket);
     setInterval(function() {
         status(socket);
     },500);
@@ -57,6 +76,7 @@ function siegeLogs(socket) {
                 })
                 .on('end',function(){
                     socket.emit('instance',{
+                        id: inst.instanceId,
                         hostname: inst.dnsName +'\t',
                         lines: lines[lines.length-1]
                     });
