@@ -98,7 +98,7 @@ function status(socket) {
 }
 
 function emitStatus(inst, socket) {
-    if(inst.dnsName) {
+    if(typeof inst !== 'undefined' && inst.dnsName) {
         request
           .get('http://' + inst.dnsName + ':' + config.controlPort)
           .end(function(res){
