@@ -59,7 +59,7 @@ function siegeLogs(socket) {
     })
 
     regions.on('instance',function(inst) {
-        if(!inst.dnsName) {
+        if(typeof inst !== 'undefined' && !inst.dnsName) {
             console.log('invalid instance name');
             return;
         }
