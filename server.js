@@ -65,6 +65,9 @@ function siegeLogs(socket) {
         }
         request
           .get('http://' + inst.dnsName + ':' + config.controlPort + '/log')
+          .on('error',function(err){
+              console.log(err);
+          })
           .end(function(res){
               var lines = [];
               csv()
@@ -101,6 +104,9 @@ function emitStatus(inst, socket) {
     if(typeof inst !== 'undefined' && inst.dnsName) {
         request
           .get('http://' + inst.dnsName + ':' + config.controlPort)
+          .on('error',function(err){
+              console.log(err);
+          })
           .end(function(res){
               socket.emit('status',{
                   hostname: inst.dnsName,
