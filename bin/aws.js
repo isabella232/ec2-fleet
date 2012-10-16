@@ -149,15 +149,6 @@ function normalizeResponse(obj, key) { // Handles quirks of xml-to-js transforma
  * AMI's can not be copied across regions
  * @type {Object}
  */
-var regionInstances = { // We are interested in Ubuntu Server 12.04 LTS (64 bit, EBS)
-//    "ap-northeast-1": "ami-c641f2c7",
-//    "ap-southeast-1": "ami-acf6b0fe",
-//    "eu-west-1": "ami-ab9491df",
-//    "sa-east-1": "ami-5c03dd41",
-    "us-east-1": "ami-97ae12fe",
-    "us-west-1": "ami-f1edcab4"
-//    ,"us-west-2": "ami-4438b474"
-};
 
 var clients = {}; // {<region>: <ec2 client>}
 function getClient(region) {
@@ -166,8 +157,8 @@ function getClient(region) {
         var client = clients[region] = aws2js.load('ec2');
         client.region = region;
 
-        if (!(region in regionInstances))
-            throw new Error("Unknown AWS region: "+region+". Must be one of: "+Object.keys(regionInstances));
+        if (!(region in config.regionInstances))
+            throw new Error("Unknown AWS region: "+region+". Must be one of: "+Object.keys(config.regionInstances));
         client.setRegion(region);
 
         if (typeof config.accessKeyId !== 'string' || config.accessKeyId.length !== 20 ||
@@ -188,7 +179,7 @@ function startInstance(client) {
     // We use Cloud Init, see https://help.ubuntu.com/community/CloudInit
     var params = {
         InstanceType: (config.instanceType || "t1.micro"),
-        ImageId: regionInstances[client.region],
+        ImageId: config.regionInstances[client.region],
         MinCount: 1,
         MaxCount: 1,
         UserData: new Buffer(userdata).toString("base64")
@@ -255,7 +246,7 @@ function getInstances(client, callback) {
                     return;
 
                 // Check instance tags. All tags given in config must be the same.
-                if (config.instanceTags) {
+                if (config.instanceTags && Array.isArray(instance.tagSet)) {
                     var tags = {};
                     instance.tagSet.forEach(function(item) {tags[item.key] = item.value;});
                     for (var key in config.instanceTags)
@@ -365,7 +356,7 @@ function runSiege(instances, options) {
     var time = (options.time) ? options.time : 30
       , concurrent = (options.concurrent) ? options.concurrent : 10;
     console.log('Running siege for',time,'seconds','with',concurrent,'concurrent users');
-    var command = encodeURIComponent(new Buffer('-t'+time+'s -c '+concurrent+' -b -i --header="Accept-Encoding: gzip,compress" -f/home/ubuntu/urls.txt').toString('base64'));
+    var command = encodeURIComponent(new Buffer('-t'+time+'s -c '+concurrent+' -b -f/home/ubuntu/urls.txt').toString('base64'));
     _.each(instances, function(inst) {
         var path = '/siege?c=' + command;
         var req = http.request({
@@ -381,6 +372,11 @@ function runSiege(instances, options) {
         });
         req.end();
     });
+}
+
+function slam(instance, options) {
+    var time = (options.time) ? options.time : 30
+      , concurrent = (options.concurrent) ? options.concurrent : 10;
 }
 
 function siegeLogs(inst) {
