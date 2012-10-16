@@ -26,12 +26,12 @@
 # *                hard    nofile          32000
 
 # Install latest stable node.js
-add-apt-repository ppa:chris-lea/node.js
-apt-get update
-apt-get install -y nodejs npm git-core build-essential checkinstall
+# add-apt-repository ppa:chris-lea/node.js
+# apt-get update
+# apt-get install -y nodejs npm git-core build-essential checkinstall
 
 # Checkout the client project from github
-git clone https://github.com/npr/ec2-fleet-client /home/ubuntu/client
+# git clone https://github.com/npr/ec2-fleet-client /home/ubuntu/client
 cd /home/ubuntu/client
 # Update just in case this is an image with client already installed
 git pull
@@ -52,21 +52,21 @@ chown -R ubuntu:ubuntu /home/ubuntu/client /home/ubuntu/tmp /home/ubuntu/.npm
 # make install
 
 # Write Upstart job.
-cat > /etc/init/client.conf <<"EOF"
-    start on runlevel [2345]
+# cat > /etc/init/client.conf <<"EOF"
+#    start on runlevel [2345]
 
-    respawn
-    respawn limit 10 5 # max 10 times within 5 seconds
+#    respawn
+#    respawn limit 10 5 # max 10 times within 5 seconds
 
-    setuid ubuntu
-    chdir /home/ubuntu/client
-    limit nofile 100000 100000
+#    setuid ubuntu
+#    chdir /home/ubuntu/client
+#    limit nofile 100000 100000
 
-    exec node server.js
-EOF
+#    exec node server.js
+#EOF
 
 # The upstart job will launch our client and keep it alive.
 # Output is written to /var/log/upstart/client.log
-mkdir /var/log/upstart
-initctl reload-configuration
-start client
+# mkdir /var/log/upstart
+# initctl reload-configuration
+restart client
