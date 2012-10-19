@@ -54,9 +54,11 @@ io.sockets.on('connection', function (socket) {
 
 function siegeLogs(socket) {
     var regions = fleet.loadRegions();
+
     regions.on('error',function(err){
         console.log(err);
     })
+
 
     regions.on('instance',function(inst) {
         if(typeof inst !== 'undefined' && !inst.dnsName) {
@@ -66,7 +68,7 @@ function siegeLogs(socket) {
         request
           .get('http://' + inst.dnsName + ':' + config.controlPort + '/log')
           .on('error',function(err){
-              console.log(err);
+              console.log(inst.dnsName, err);
           })
           .end(function(res){
               var lines = [];
@@ -88,10 +90,15 @@ function siegeLogs(socket) {
     });
 
     regions.eachInstance();
+
 }
 
 function status(socket) {
     var regions = fleet.loadRegions();
+
+    regions.on('error',function(err){
+        console.log(err);
+    });
 
     regions.on('instance', function(inst){
         emitStatus(inst, socket);
