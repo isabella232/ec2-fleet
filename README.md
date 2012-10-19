@@ -36,6 +36,13 @@ npm install -g bower
 # Create configuration file
 cp config/aws-config.json.sample config/aws-config.json
 
+# Important! Update the instanceTags key/value pair set if you are running in multiple environments
+# InstanceTags is arbitrary.  It really just identifies the instances that you will be using for load tests
+# the keyValue pair under instanceTags needs to be unique to your test.
+"instanceTags":{
+    "yourKey":"yes"
+}
+
 # Edit accessKeyId, accessKeySecret in config/aws-config.json
 # https://portal.aws.amazon.com/gp/aws/securityCredentials
 # Also, choose regions where you wish your instances to be launched.
