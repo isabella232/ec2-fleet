@@ -356,7 +356,7 @@ function runSiege(instances, options) {
     var time = (options.time) ? options.time : 30
       , concurrent = (options.concurrent) ? options.concurrent : 10;
     console.log('Running siege for',time,'seconds','with',concurrent,'concurrent users');
-    var command = encodeURIComponent(new Buffer('-t'+time+'s -c '+concurrent+' -b -f/home/ubuntu/urls.txt').toString('base64'));
+    var command = encodeURIComponent(new Buffer('-t'+time+'s -c '+concurrent+' -b -i -f/home/ubuntu/urls.txt').toString('base64'));
     _.each(instances, function(inst) {
         var path = '/siege?c=' + command;
         var req = http.request({
